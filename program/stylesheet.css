@@ -1,0 +1,49 @@
+@font-face {
+    font-family: 'TypoGraphica';
+    src: url('TypoGraphica.ttf') format('truetype');
+}
+
+.center {
+    text-align: center;
+    width: 100%;
+    margin: auto;
+}
+
+.first-third {
+    text-align: center;
+    width: 70%;
+}
+
+/*.second-third {
+    text-align: center;
+    width: 130%;
+}*/
+
+.interface-text {
+    color: #00f;
+    font-size: 50px;
+    font-weight: 900;
+    font-family: "TypoGraphica";
+    letter-spacing: 5px;
+    word-spacing: 15px;
+    text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+}
+
+.rounded-corners {
+    border-radius: 25px;
+}
+
+.input-big-size {
+    width: 400px;
+    height: 50px;
+    font-size: 25px;
+}
+
+.text-align {
+    text-align: center;
+}
+
+.vertical-spacer {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
