@@ -11,13 +11,14 @@
 
 .first-third {
     text-align: center;
-    width: 70%;
+    float: left;
+    padding-left: 10%;
 }
 
-/*.second-third {
+.second-third {
     text-align: center;
-    width: 130%;
-}*/
+    float: right;
+}
 
 .interface-text {
     color: #00f;
@@ -46,4 +47,10 @@
 .vertical-spacer {
     margin-top: 10px;
     margin-bottom: 10px;
+}
+
+.image-scale {
+    height: 700px;
+    width: 30%;
+    padding-right: 10%;
 }
