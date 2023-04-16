@@ -14,7 +14,7 @@
 #        Log captions -> Video
 #        Music -> Video          - no
 #
-# Config: FILE {EXTENSION}
+# Config: FILE {EXTENSION} - no
 #         TEXT
 #         MUSC - no
 #         CAPT
@@ -32,37 +32,20 @@
 #               X APND    (7)   - Add the text/file at the end 
 #                                 of the image data
 #
-#              PIXEL TWO: {extension letter one}-(in all three color change) {extension letter two}-(in all three color change) {extension letter three}-(in all three color change)
-#                                       |                                                  |                                                  |
-#                         Value is the ASCII representative                  Value is the ASCII representative                  Value is the ASCII representative
+#         X    PIXEL TWO: {extension letter one}-(in all three color change) {extension letter two}-(in all three color change) {extension letter three}-(in all three color change)
+#         X                             |                                                  |                                                  |
+#         X               Value is the ASCII representative                  Value is the ASCII representative                  Value is the ASCII representative
 #
-# Encryption: To come
 # Write to top or left - NO
-# Add custom encode mode - ?
+# Add custom encode mode - DONE
 # GUI with flask - DONE
-# Text image generator - lib
-# Custom image generator - lib
 
 # Imports
 from copy import deepcopy as dc
 import cv2
 
 # Main function
-def hideText(encodeMode: str, encodedType: str, message: str, imageName: str, passedFrame = []):
-    fileExtension = []
-
-    if __encodeTypeToNumber__(encodedType) == "ERR":
-        print("""
-UNKNOWN TYPE!
-
-Please select:
-
-TEXT - Text
-FILE - File
-CAPT - Video Captions
-        """)
-        return False
-    
+def hideText(encodeMode: str, message: str, imageName: str, passedFrame = []):
     if __encodeModeToNumber__(encodeMode) == "ERR":
         print("""
 UNKNOWN TYPE!
@@ -85,28 +68,19 @@ ASCI - Each value is a letter (ASCII)
         x = passedFrame.shape[1]
     else:
         imageData, y, x = openImage(imageName)
-
-    if encodedType == "TEXT":
-        # Encode data
-        encodedMessage = messageToBinary(message)
-
-    elif encodedType == "FILE":
-        with open(message, "rb") as fileToEncode:
-            fileToEncodeContents = fileToEncode.read()
-            encodedMessage = "".join(format(byte, "08b") for byte in fileToEncodeContents)
-            encodedMessage += "000100000001000101001001110001000100000100000001010100001000101001011000001010100"
-
-        fileExtension = message.split(".")[-1]
+        
+    # Encode data
+    encodedMessage = messageToBinary(message)
 
     # Write data to image
-    encodedImage = writeBinaryToImage(imageData, x, y, encodedMessage, __encodeModeToNumber__(encodeMode), __encodeTypeToNumber__(encodedType), fileExtension)
+    encodedImage = writeBinaryToImage(imageData, x, y, encodedMessage, __encodeModeToNumber__(encodeMode))
     
     if imageName == "PASS":
         return encodedImage
     else:
         saveImage(encodedImage)
 
-def unhideText(imageName: str, passedFrame = []):
+def unhideText(imageName: str, expectedSize: int, passedFrame = []):
     if imageName == "PASS":
         imageData = passedFrame
         y = passedFrame.shape[0]
@@ -114,19 +88,12 @@ def unhideText(imageName: str, passedFrame = []):
     else:
         imageData, y, x = openImage(imageName)
 
-    binaryData = readBinaryFromImage(imageData, x, y)
+    binaryData = readBinaryFromImage(imageData, x, y, expectedSize)
+    binaryData = binaryData.replace(" ", "")
     
-    if abs(int(imageData[0][0][0]) - int(imageData[0][0][1])) == 1:
-        message = binaryToMessage(binaryData)
+    message = binaryToMessage(binaryData)
 
-        return "".join(list(message)[0:-9])
-    
-    if abs(int(imageData[0][0][0]) - int(imageData[0][0][1])) == 0:
-        with open(f"fileOutput.{chr(imageData[1][0][2])}{chr(imageData[1][0][1])}{chr(imageData[1][0][0])}", "wb") as outputFile:
-            binaryNumber = int(binaryData, 2)
-            outputFile.write(binaryNumber.to_bytes((binaryNumber.bit_length() + 7) // 8, "big"))
-
-        return "IMAGE_DECODE_SAVE"
+    return "".join(list(message)[0:-9])
 
 # Returns pixel image data for some image, including the x and y size
 def openImage(file: str):
@@ -176,8 +143,8 @@ def binaryToMessage(binaryData: str):
 
     return decoded
 
-def writeBinaryToImage(imageData: list, xSize: int, ySize: int, binaryData: str, encodeMode: int, encodedType: int, extension: list):
-    #print(f"ENCODING: {binaryData}")
+def writeBinaryToImage(imageData: list, xSize: int, ySize: int, binaryData: str, encodeMode: int):
+    #print(f"ENCODING: {binaryData}\nMODE: {encodeMode}")
 
     image = dc(imageData)
     count = 0
@@ -185,129 +152,16 @@ def writeBinaryToImage(imageData: list, xSize: int, ySize: int, binaryData: str,
     
     if image[0][0][0] > 20:
         image[0][0][2] = image[0][0][0] - encodeMode
-        image[0][0][1] = image[0][0][0] - encodedType
     else:
         image[0][0][2] = image[0][0][0] + encodeMode
-        image[0][0][1] = image[0][0][0] + encodedType
-
-    if encodedType == 0:
-        image[1][0][2] = ord(extension[0])
-        image[1][0][1] = ord(extension[1])
-        image[1][0][0] = ord(extension[2])
     
     for x in range(xSize):
-        for y in range(2, ySize):
-            if encodedType == 1:
-                if encodeMode == 0: # All three color change
-                    for color in range(3):
-                        if count == dataLenght:
-                            return image
-
-                        if binaryData[count] == "1" and image[y][x][color]%2 == 0:
-                            count += 1
-                            continue
-                        elif binaryData[count] == "0" and image[y][x][color]%2 == 1:
-                            count += 1
-                            continue
-                        else:
-                            if image[y][x][color] < 50:
-                                image[y][x][color] += 1
-                            else:
-                                image[y][x][color] -= 1
-
-                            count += 1
-                elif encodeMode == 1: # Change only red
-                    if count == dataLenght:
-                        return image
-
-                    # CV2 uses BGR colors, so red is actually last
-                    if binaryData[count] == "1" and image[y][x][2]%2 == 0:
-                        count += 1
-                        continue
-                    elif binaryData[count] == "0" and image[y][x][2]%2 == 1:
-                        count += 1
-                        continue
-                    else:
-                        if image[y][x][2] < 50:
-                            image[y][x][2] += 1
-                        else:
-                            image[y][x][2] -= 1
-
-                        count += 1
-                elif encodeMode == 2: # Change only green
-                    if count == dataLenght:
-                        return image
-
-                    if binaryData[count] == "1" and image[y][x][1]%2 == 0:
-                        count += 1
-                        continue
-                    elif binaryData[count] == "0" and image[y][x][1]%2 == 1:
-                        count += 1
-                        continue
-                    else:
-                        if image[y][x][1] < 50:
-                            image[y][x][1] += 1
-                        else:
-                            image[y][x][1] -= 1
-
-                        count += 1
-                elif encodeMode == 3: # Change only blue
-                    if count == dataLenght:
-                        return image
-
-                    # CV2 uses BGR colors, so blue is actually first
-                    if binaryData[count] == "1" and image[y][x][0]%2 == 0:
-                        count += 1
-                        continue
-                    elif binaryData[count] == "0" and image[y][x][0]%2 == 1:
-                        count += 1
-                        continue
-                    else:
-                        if image[y][x][0] < 50:
-                            image[y][x][0] += 1
-                        else:
-                            image[y][x][0] -= 1
-
-                        count += 1
-                elif encodeMode == 4: # Change a lot
-                    for color in range(3):
-                        if count == dataLenght:
-                            return image
-
-                        if binaryData[count] == "1" and image[y][x][color]%2 == 0:
-                            count += 1
-                            continue
-                        elif binaryData[count] == "0" and image[y][x][color]%2 == 1:
-                            count += 1
-                            continue
-                        else:
-                            if image[y][x][color] < 50:
-                                image[y][x][color] += 51
-                            else:
-                                image[y][x][color] -= 51
-
-                            count += 1
-                elif encodeMode == 5: # Change them the same
-                    if count == dataLenght:
-                        return image
-
-                    for color in range(3):
-                        if binaryData[count] == "1" and image[y][x][color]%2 == 0:
-                            continue
-                        elif binaryData[count] == "0" and image[y][x][color]%2 == 1:
-                            continue
-                        else:
-                            if image[y][x][color] < 50:
-                                image[y][x][color] += 1
-                            else:
-                                image[y][x][color] -= 1
-
-                    count += 1
-            elif encodedType == 0:
+        for y in range(1, ySize):
+            if encodeMode == 0: # All three color change
                 for color in range(3):
                     if count == dataLenght:
                         return image
-            
+
                     if binaryData[count] == "1" and image[y][x][color]%2 == 0:
                         count += 1
                         continue
@@ -321,69 +175,104 @@ def writeBinaryToImage(imageData: list, xSize: int, ySize: int, binaryData: str,
                             image[y][x][color] -= 1
 
                         count += 1
+            elif encodeMode == 1: # Change only red
+                if count == dataLenght:
+                    return image
+
+                # CV2 uses BGR colors, so red is actually last
+                if binaryData[count] == "1" and image[y][x][2]%2 == 0:
+                    count += 1
+                    continue
+                elif binaryData[count] == "0" and image[y][x][2]%2 == 1:
+                    count += 1
+                    continue
+                else:
+                    if image[y][x][2] < 50:
+                        image[y][x][2] += 1
+                    else:
+                        image[y][x][2] -= 1
+
+                    count += 1
+            elif encodeMode == 2: # Change only green
+                if count == dataLenght:
+                    return image
+
+                if binaryData[count] == "1" and image[y][x][1]%2 == 0:
+                    count += 1
+                    continue
+                elif binaryData[count] == "0" and image[y][x][1]%2 == 1:
+                    count += 1
+                    continue
+                else:
+                    if image[y][x][1] < 50:
+                        image[y][x][1] += 1
+                    else:
+                        image[y][x][1] -= 1
+
+                    count += 1
+            elif encodeMode == 3: # Change only blue
+                if count == dataLenght:
+                    return image
+
+                # CV2 uses BGR colors, so blue is actually first
+                if binaryData[count] == "1" and image[y][x][0]%2 == 0:
+                    count += 1
+                    continue
+                elif binaryData[count] == "0" and image[y][x][0]%2 == 1:
+                    count += 1
+                    continue
+                else:
+                    if image[y][x][0] < 50:
+                        image[y][x][0] += 1
+                    else:
+                        image[y][x][0] -= 1
+
+                    count += 1
+            elif encodeMode == 4: # Change a lot
+                for color in range(3):
+                    if count == dataLenght:
+                        return image
+
+                    if binaryData[count] == "1" and image[y][x][color]%2 == 0:
+                        count += 1
+                        continue
+                    elif binaryData[count] == "0" and image[y][x][color]%2 == 1:
+                        count += 1
+                        continue
+                    else:
+                        if image[y][x][color] < 50:
+                            image[y][x][color] += 51
+                        else:
+                            image[y][x][color] -= 51
+
+                        count += 1
+            elif encodeMode == 5: # Change them the same
+                if count == dataLenght:
+                    return image
+
+                for color in range(3):
+                    if binaryData[count] == "1" and image[y][x][color]%2 == 0:
+                        continue
+                    elif binaryData[count] == "0" and image[y][x][color]%2 == 1:
+                        continue
+                    else:
+                        if image[y][x][color] < 50:
+                            image[y][x][color] += 1
+                        else:
+                            image[y][x][color] -= 1
+
+                count += 1
 
     return image
 
-def readBinaryFromImage(imageData: list, xSize: int, ySize: int):
-    data = ""
+def readBinaryFromImage(imageData: list, xSize: int, ySize: int, expectedSize = 0):
+    data = " " * (expectedSize + 8)
     endText = "000100000001000101001001110001000100000100000001010100001000101001011000001010100" # END TEXT, ends the reading
     decodeMode = abs(int(imageData[0][0][0]) - int(imageData[0][0][2]))
-    decodeType = abs(int(imageData[0][0][0]) - int(imageData[0][0][1]))
     
     for x in range(xSize):
-        for y in range(2, ySize):
-            if decodeType == 1:
-                if decodeMode == 0: # All three color change
-                    for color in range(3):
-                        if endText in data:
-                            return data
-                        
-                        if imageData[y][x][color]%2 == 0:
-                            data += "1"
-                        else:
-                            data += "0"
-                elif decodeMode == 1: # Change only red
-                    if endText in data:
-                        return data
-                    
-                    if imageData[y][x][2]%2 == 0:
-                        data += "1"
-                    else:
-                        data += "0"
-                elif decodeMode == 2: # Change only green
-                    if endText in data:
-                        return data
-                    
-                    if imageData[y][x][1]%2 == 0:
-                        data += "1"
-                    else:
-                        data += "0"
-                elif decodeMode == 3: # Change only blue
-                    if endText in data:
-                        return data
-                    
-                    if imageData[y][x][0]%2 == 0:
-                        data += "1"
-                    else:
-                        data += "0"
-                elif decodeMode == 4: # Change a lot
-                    for color in range(3):
-                        if endText in data:
-                            return data
-                        
-                        if imageData[y][x][color]%2 == 0:
-                            data += "1"
-                        else:
-                            data += "0"
-                elif decodeMode == 5: # Change them the same
-                    if endText in data:
-                        return data
-                    
-                    if imageData[y][x][0]%2 == 0:
-                        data += "1"
-                    else:
-                        data += "0"
-            elif decodeType == 0:
+        for y in range(1, ySize):
+            if decodeMode == 0: # All three color change
                 for color in range(3):
                     if endText in data:
                         return data
@@ -392,6 +281,47 @@ def readBinaryFromImage(imageData: list, xSize: int, ySize: int):
                         data += "1"
                     else:
                         data += "0"
+            elif decodeMode == 1: # Change only red
+                if endText in data:
+                    return data
+                
+                if imageData[y][x][2]%2 == 0:
+                    data += "1"
+                else:
+                    data += "0"
+            elif decodeMode == 2: # Change only green
+                if endText in data:
+                    return data
+                
+                if imageData[y][x][1]%2 == 0:
+                    data += "1"
+                else:
+                    data += "0"
+            elif decodeMode == 3: # Change only blue
+                if endText in data:
+                    return data
+                
+                if imageData[y][x][0]%2 == 0:
+                    data += "1"
+                else:
+                    data += "0"
+            elif decodeMode == 4: # Change a lot
+                for color in range(3):
+                    if endText in data:
+                        return data
+                    
+                    if imageData[y][x][color]%2 == 0:
+                        data += "1"
+                    else:
+                        data += "0"
+            elif decodeMode == 5: # Change them the same
+                if endText in data:
+                    return data
+                
+                if imageData[y][x][0]%2 == 0:
+                    data += "1"
+                else:
+                    data += "0"
 
     return data
 
@@ -414,17 +344,4 @@ def __encodeModeToNumber__(encodeMode: str):
         case "APND":
             return 7
 
-    return "ERR"
-
-def __encodeTypeToNumber__(encodeType: str):
-    match encodeType:
-        case "FILE":
-            return 0
-        case "TEXT":
-            return 1
-        #case "MUSIC":
-            #return 2
-        case "CAPT":
-            return 2
-        
     return "ERR"

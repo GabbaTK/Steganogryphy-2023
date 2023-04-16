@@ -39,11 +39,11 @@ def encodeVideo(videoName: str, captionsFileName: str, encodeMode: str):
                     #print(hideText(encodeMode, "TEXT", " ", "PASS", frame)[0][0])
                     #cv2.imwrite("AAA.png", hideText(encodeMode, "TEXT", " ", "PASS", frame))
                     #videoWriter.write(frame)
-                    videoWriter.write(hideText(encodeMode, "TEXT", " ", "PASS", frame))
+                    videoWriter.write(hideText(encodeMode, " ", "PASS", frame))
 
             if writing:
                 #videoWriter.write(frame)
-                videoWriter.write(hideText(encodeMode, "TEXT", captionLine[2], "PASS", frame))
+                videoWriter.write(hideText(encodeMode, captionLine[2], "PASS", frame))
 
                 if frameId == captionLine[1]:
                     writing = False
@@ -71,14 +71,14 @@ def decodeVideo(videoName: str):
 
         #print(len(frame))
 
-        text = unhideText("PASS", frame)
+        text = unhideText("PASS", 1, frame)
         
         frame = cv2.putText(frame, text, (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
 
         videoWriter.write(frame)
 
-        cv2.imshow("Video", frame)
-        cv2.waitKey(1)
+        #cv2.imshow("Video", frame)
+        #cv2.waitKey(1)
 
     video.release()
     videoWriter.release()

@@ -13,6 +13,7 @@ from SteganographyFinal import hideText, unhideText
 from videoEncode import encodeVideo, decodeVideo
 import os
 from copy import deepcopy as dc
+import threading
 
 imgExtension = ["jpeg", "png", "bmp", "tiff", "jpg", "mp4", "avi", "mov"]
 def imageFilter(extension):
@@ -32,7 +33,10 @@ def updateList(html, vid):
                         </select>
                         <h2 class="vertical-spacer">Enter secret message to encode into file or enter the directory of the file to encode into the other file</h2>
                         <h2 class="vertical-spacer">( can only encode file into image, not video, enter DECODE to decode the message )</h2>
-                        <input type="text" id="secret" name="secret" class="rounded-corners input-big-size text-align vertical-spacer">
+                        <input type="text" id="secret" name="secret" class="rounded-corners input-big-size text-align vertical-spacer input-box" autocomplete="off">
+                        <br>
+                        <h2 class="vertical-spacer">If decoding please enter a rough estimate of the text size, the closer the faster decoding</h2>
+                        <input type="text" id="size" name="size" class="rounded-corners input-big-size text-align vertical-spacer" autocomplete="off">
                         <br>
                         <br>
                         <input type="submit" name="submit" value="Submit" class="rounded-corners input-big-size text-align">
@@ -40,11 +44,13 @@ def updateList(html, vid):
 """
     if not vid:
         homeHtmlEnd += """
+                    <br>
                     <button class="rounded-corners input-big-size text-align", onClick="download('img')">Download</button>
                 </div>
 """
     else:
         homeHtmlEnd += """
+                    <br>
                     <button class="rounded-corners input-big-size text-align", onClick="download('vid')">Download</button>
                 </div>
 """
@@ -93,11 +99,20 @@ function download(imgVid) {
         <br>
         <div>
             <div class="first-third" style="margin-top: 40px">
+                <form action="/upload" method="POST" enctype="multipart/form-data">
+                    <input type="file" name="file" class="center input-big-size text-align">
+                    <br>
+                    <input type="submit" value="Upload" class="rounded-corners input-big-size text-align">
+                </form>
+                <br>
+                <form action="/refresh" method="POST">
+                    <input type="submit" value="Refresh files" class="rounded-corners input-big-size text-align">
+                </form>
+                <br>
                 <form action="/" method="post">
                     <h2 class="vertical-spacer">Plese select an encoding type</h2>
                     <select name="type" id="type" class="rounded-corners input-big-size text-align vertical-spacer">
                         <option value="TEXT">Hide some text in the image</option>
-                        <option value="FILE">Encode a file into the image</option>
                         <option value="CAPT">Add captions to a video</option>
                     </select>
 
@@ -117,6 +132,7 @@ function download(imgVid) {
                     <h2 class="vertical-spacer">Select file name to encode or decode</h2>
                     <select name="file" id="file" class="rounded-corners input-big-size text-align vertical-spacer">
 """
+#<option value="FILE">Encode a file into the image</option>
 
 homeHtml = updateList(homeHtmlO, False)
 
@@ -158,11 +174,20 @@ function download(imgVid) {
         <br>
         <div>
             <div class="center" style="margin-top: 40px">
+                <form action="/upload" method="POST" enctype="multipart/form-data">
+                    <input type="file" name="file" class="center input-big-size text-align">
+                    <br>
+                    <input type="submit" value="Upload" class="rounded-corners input-big-size text-align">
+                </form>
+                <br>
+                <form action="/refresh" method="POST">
+                    <input type="submit" value="Refresh files" class="rounded-corners input-big-size text-align">
+                </form>
+                <br>
                 <form action="/" method="post">
                     <h2 class="vertical-spacer">Plese select an encoding type</h2>
                     <select name="type" id="type" class="rounded-corners input-big-size text-align vertical-spacer">
                         <option value="TEXT">Hide some text in the image</option>
-                        <option value="FILE">Encode a file into the image</option>
                         <option value="CAPT">Add captions to a video</option>
                     </select>
 
@@ -182,13 +207,15 @@ function download(imgVid) {
                     <h2 class="vertical-spacer">Select file name to encode or decode</h2>
                     <select name="file" id="file" class="rounded-corners input-big-size text-align vertical-spacer">
 """
+#<option value="FILE">Encode a file into the image</option>
+
 homeHtmlNonEncoded = updateList(homeHtmlNonEncodedO, True) + """
         </div>
     </body>
 </html>
 """
 
-videoDecoded = """
+videoDecodedO = """
 <!DOCTYPE html>
 <html>
     <head>
@@ -226,11 +253,20 @@ function download(imgVid) {
         <br>
         <div>
             <div class="center" style="margin-top: 40px">
+                <form action="/upload" method="POST" enctype="multipart/form-data">
+                    <input type="file" name="file" class="center input-big-size text-align">
+                    <br>
+                    <input type="submit" value="Upload" class="rounded-corners input-big-size text-align">
+                </form>
+                <br>
+                <form action="/refresh" method="POST">
+                    <input type="submit" value="Refresh files" class="rounded-corners input-big-size text-align">
+                </form>
+                <br>
                 <form action="/" method="post">
                     <h2 class="vertical-spacer">Plese select an encoding type</h2>
                     <select name="type" id="type" class="rounded-corners input-big-size text-align vertical-spacer">
                         <option value="TEXT">Hide some text in the image</option>
-                        <option value="FILE">Encode a file into the image</option>
                         <option value="CAPT">Add captions to a video</option>
                     </select>
 
@@ -250,8 +286,9 @@ function download(imgVid) {
                     <h2 class="vertical-spacer">Select file name to encode or decode</h2>
                     <select name="file" id="file" class="rounded-corners input-big-size text-align vertical-spacer">
 """
+#<option value="FILE">Encode a file into the image</option>
 
-videoDecoded = updateList(videoDecoded, True) + """
+videoDecoded = updateList(videoDecodedO, True) + """
         </div>
     </body>
 </html>
@@ -303,47 +340,106 @@ def eVideo():
 def dVideo():
     return send_from_directory(".", "decodedVideo.mp4")
 
-@app.route('/', methods=['GET', 'POST'])
-def home():
+@app.route("/fileOutput.png")
+def imgOut():
+    return send_from_directory(".", "fileOutput.png")
+
+
+@app.route("/refresh", methods=["POST"])
+def refresh():
     homeHtmlNonEncoded = updateList(homeHtmlNonEncodedO, True) + """
         </div>
     </body>
 </html>
 """
 
+    return homeHtmlNonEncoded
+
+@app.route("/upload", methods=["POST"])
+def upload():
+    if "file" in request.files:
+        file = request.files["file"]
+
+        if file.filename != "":
+            file.save(file.filename)
+
+    return refresh()
+
+@app.route('/', methods=['GET', 'POST'])
+def home():
     if request.method == "POST":
         file = request.form['file']
         secret = request.form['secret']
         mode = request.form["mode"]
         type = request.form["type"]
+        expectedSize = request.form["size"]
 
-        if secret == "DECODE":
-            if type != "CAPT":
-                textResult = unhideText(file)
-                if textResult != "IMAGE_DECODE_SAVE":
-                    return decodingSuccess + textResult + "</h2></body></html>"
-            elif type == "CAPT":
-                decodeVideo(file)
-                return videoDecoded
-        else:   
-            if type != "CAPT":
-                hideText(mode, type, secret, file)
-
-                return encodingSuccess
-            else:
-                captionFileName = ""
-                files = [f for f in os.listdir(SEARCH_DIRECTORY) if os.path.isfile(f)]
-                for capFile in files:
-                    if capFile.split(".")[-1] == "capf":
-                        captionFileName = capFile
-
-                if captionFileName == "":
-                    return decodingSuccess + "!!ERROR!! Caption file .capf was not found!</h2></body></html>"
-                else:
-                    encodeVideo(file, captionFileName, mode)
-
-                    return homeHtmlNonEncoded
+        return encode(file, secret, mode, type, expectedSize)
     else:
-        return homeHtmlNonEncoded
+        return refresh()
+
+def encode(file, secret, mode, type, expectedSize):
+    videoDecoded = updateList(videoDecodedO, True) + """
+        </div>
+    </body>
+</html>
+"""
+    homeHtml = updateList(homeHtmlO, False)
+    encodingSuccess = homeHtml + """
+            <br>
+            <br>
+            <img class="second-third image-scale" src="EncodedImage.png" alt="Encoded image" id="encodedImage">
+        </div>
+    </body>
+</html>
+"""
+
+    decodingSuccess = homeHtml + """
+        <br>
+        <br>
+        <h2>The secret text has been decoded!</h2>
+        <h2>The secret text/error is: 
+"""
+
+    secret = secret.replace("š", "s")
+    secret = secret.replace("đ", "d")
+    secret = secret.replace("č", "c")
+    secret = secret.replace("ć", "c")
+    secret = secret.replace("ž", "z")
+    secret = secret.replace("Š", "S")
+    secret = secret.replace("Đ", "D")
+    secret = secret.replace("Č", "C")
+    secret = secret.replace("Ć", "C")
+    secret = secret.replace("Ž", "Z")
+    secret = secret.replace('”', '"')
+    secret = secret.replace('“', '"')
+    secret = secret.replace('—', "-")
+
+    if secret == "DECODE":
+        if type != "CAPT":
+            textResult = unhideText(file, expectedSize)
+            
+            return decodingSuccess + textResult + "</h2></body></html>"
+        elif type == "CAPT":
+            decodeVideo(file)
+            return videoDecoded
+    else:   
+        if type != "CAPT":
+            hideText(mode, secret, file)
+
+            return encodingSuccess
+        else:
+            captionFileName = ""
+            files = [f for f in os.listdir(SEARCH_DIRECTORY) if os.path.isfile(f)]
+            for capFile in files:
+                if capFile.split(".")[-1] == "capf":
+                    captionFileName = capFile
+
+            if captionFileName == "":
+                return decodingSuccess + "!!ERROR!! Caption file .capf was not found!</h2></body></html>"
+            else:
+                encodeVideo(file, captionFileName, mode)
+
+                return refresh()
 
 app.run(port=5010)
