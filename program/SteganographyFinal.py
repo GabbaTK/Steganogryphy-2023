@@ -143,7 +143,7 @@ def binaryToMessage(binaryData: str):
     return decoded
 
 def writeBinaryToImage(imageData: list, xSize: int, ySize: int, binaryData: str, encodeMode: int):
-    print(f"ENCODING: {binaryData}\nMODE: {encodeMode}")
+    #print(f"ENCODING: {binaryData}\nMODE: {encodeMode}")
 
     image = dc(imageData)
     count = 0
