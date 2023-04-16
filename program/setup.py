@@ -15,12 +15,12 @@ except:
     import numpy as np
 
 # Create the "template" files
-#with open("EncodedImage.png", "w") as file:
-#    file.write("")
-#with open("encodedVideo.avi", "w") as file:
-#    file.write("")
-#with open("EncodedImage.png", "w") as file:
-#    file.write("")
+with open("EncodedImage.png", "w") as file:
+    file.write("")
+with open("encodedVideo.avi", "w") as file:
+    file.write("")
+with open("decodedVideo.mp4", "w") as file:
+    file.write("")
 #frame = np.zeros((480, 640, 3), dtype=np.uint8)
 #videoWriter = cv2.VideoWriter("encodedVideo.avi", cv2.VideoWriter_fourcc(*"FFV1"), 30, (480, 640))
 #videoWriter.write(frame)
