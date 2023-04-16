@@ -419,6 +419,8 @@ def encode(file, secret, mode, type, expectedSize):
     secret = secret.replace('”', '"')
     secret = secret.replace('“', '"')
     secret = secret.replace('—', "-")
+    secret = secret.replace("„", '"')
+    secret = secret.replace("“", '"')
 
     if secret == "DECODE":
         if type != "CAPT":

@@ -278,50 +278,63 @@ def readBinaryFromImage(imageData: list, xSize: int, ySize: int, expectedSize = 
                         return data
                     
                     if imageData[y][x][color]%2 == 0:
-                        data += "1"
+                        data = addToData(data, "1")
                     else:
-                        data += "0"
+                        data = addToData(data, "0")
             elif decodeMode == 1: # Change only red
                 if endText in data:
                     return data
                 
                 if imageData[y][x][2]%2 == 0:
-                    data += "1"
+                    data = addToData(data, "1")
                 else:
-                    data += "0"
+                    data = addToData(data, "0")
             elif decodeMode == 2: # Change only green
                 if endText in data:
                     return data
                 
                 if imageData[y][x][1]%2 == 0:
-                    data += "1"
+                    data = addToData(data, "1")
                 else:
-                    data += "0"
+                    data = addToData(data, "0")
             elif decodeMode == 3: # Change only blue
                 if endText in data:
                     return data
                 
                 if imageData[y][x][0]%2 == 0:
-                    data += "1"
+                    data = addToData(data, "1")
                 else:
-                    data += "0"
+                    data = addToData(data, "0")
             elif decodeMode == 4: # Change a lot
                 for color in range(3):
                     if endText in data:
                         return data
                     
                     if imageData[y][x][color]%2 == 0:
-                        data += "1"
+                        data = addToData(data, "1")
                     else:
-                        data += "0"
+                        data = addToData(data, "0")
             elif decodeMode == 5: # Change them the same
                 if endText in data:
                     return data
                 
                 if imageData[y][x][0]%2 == 0:
-                    data += "1"
+                    data = addToData(data, "1")
                 else:
-                    data += "0"
+                    data = addToData(data, "0")
+
+    return data
+
+def addToData(data, appendData):
+    try:
+        charIndex = data.index(" ")
+
+        data = list(data)
+        data[charIndex] = appendData
+
+        return "".join(data)
+    except:
+        data += appendData
 
     return data
 
