@@ -329,17 +329,17 @@ def interfaceTextFont():
 def webLogo():
     return send_from_directory(".", "logo.jpg")
 
-@app.route("/encodedVideo.avi")
-def eVideo():
-    return send_from_directory(".", "encodedVideo.avi")
+#@app.route("/encodedVideo.avi")
+#def eVideo():
+#    return send_from_directory(".", "encodedVideo.avi")
 
-@app.route("/decodedVideo.mp4")
-def dVideo():
-    return send_from_directory(".", "decodedVideo.mp4")
+#@app.route("/decodedVideo.mp4")
+#def dVideo():
+#    return send_from_directory(".", "decodedVideo.mp4")
 
-@app.route("/fileOutput.png")
-def imgOut():
-    return send_from_directory(".", "fileOutput.png")
+#@app.route("/fileOutput.png")
+#def imgOut():
+#    return send_from_directory(".", "fileOutput.png")
 
 
 @app.route("/refresh", methods=["POST"])

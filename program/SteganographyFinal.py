@@ -264,8 +264,8 @@ def writeBinaryToImage(imageData: list, xSize: int, ySize: int, binaryData: str,
 
     return image
 
-def readBinaryFromImage(imageData: list, xSize: int, ySize: int, expectedSize = 0):
-    data = " " * (expectedSize + 8)
+def readBinaryFromImage(imageData: list, xSize: int, ySize: int):
+    data = ""
     endText = "000100000001000101001001110001000100000100000001010100001000101001011000001010100" # END TEXT, ends the reading
     decodeMode = abs(int(imageData[0][0][0]) - int(imageData[0][0][2]))
     
