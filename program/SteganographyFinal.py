@@ -80,7 +80,7 @@ ASCI - Each value is a letter (ASCII)
     else:
         saveImage(encodedImage)
 
-def unhideText(imageName: str, expectedSize: int, passedFrame = []):
+def unhideText(imageName: str, passedFrame = []):
     if imageName == "PASS":
         imageData = passedFrame
         y = passedFrame.shape[0]
@@ -88,8 +88,7 @@ def unhideText(imageName: str, expectedSize: int, passedFrame = []):
     else:
         imageData, y, x = openImage(imageName)
 
-    binaryData = readBinaryFromImage(imageData, x, y, expectedSize)
-    binaryData = binaryData.replace(" ", "")
+    binaryData = readBinaryFromImage(imageData, x, y)
     
     message = binaryToMessage(binaryData)
 
@@ -144,7 +143,7 @@ def binaryToMessage(binaryData: str):
     return decoded
 
 def writeBinaryToImage(imageData: list, xSize: int, ySize: int, binaryData: str, encodeMode: int):
-    #print(f"ENCODING: {binaryData}\nMODE: {encodeMode}")
+    print(f"ENCODING: {binaryData}\nMODE: {encodeMode}")
 
     image = dc(imageData)
     count = 0
@@ -278,63 +277,50 @@ def readBinaryFromImage(imageData: list, xSize: int, ySize: int, expectedSize = 
                         return data
                     
                     if imageData[y][x][color]%2 == 0:
-                        data = addToData(data, "1")
+                        data += "1"
                     else:
-                        data = addToData(data, "0")
+                        data += "0"
             elif decodeMode == 1: # Change only red
                 if endText in data:
                     return data
                 
                 if imageData[y][x][2]%2 == 0:
-                    data = addToData(data, "1")
+                    data += "1"
                 else:
-                    data = addToData(data, "0")
+                    data += "0"
             elif decodeMode == 2: # Change only green
                 if endText in data:
                     return data
                 
                 if imageData[y][x][1]%2 == 0:
-                    data = addToData(data, "1")
+                    data += "1"
                 else:
-                    data = addToData(data, "0")
+                    data += "0"
             elif decodeMode == 3: # Change only blue
                 if endText in data:
                     return data
                 
                 if imageData[y][x][0]%2 == 0:
-                    data = addToData(data, "1")
+                    data += "1"
                 else:
-                    data = addToData(data, "0")
+                    data += "0"
             elif decodeMode == 4: # Change a lot
                 for color in range(3):
                     if endText in data:
                         return data
                     
                     if imageData[y][x][color]%2 == 0:
-                        data = addToData(data, "1")
+                        data += "1"
                     else:
-                        data = addToData(data, "0")
+                        data += "0"
             elif decodeMode == 5: # Change them the same
                 if endText in data:
                     return data
                 
                 if imageData[y][x][0]%2 == 0:
-                    data = addToData(data, "1")
+                    data += "1"
                 else:
-                    data = addToData(data, "0")
-
-    return data
-
-def addToData(data, appendData):
-    try:
-        charIndex = data.index(" ")
-
-        data = list(data)
-        data[charIndex] = appendData
-
-        return "".join(data)
-    except:
-        data += appendData
+                    data += "0"
 
     return data
 

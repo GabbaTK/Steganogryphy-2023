@@ -71,7 +71,7 @@ def decodeVideo(videoName: str):
 
         #print(len(frame))
 
-        text = unhideText("PASS", 1, frame)
+        text = unhideText("PASS", frame)
         
         frame = cv2.putText(frame, text, (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
 

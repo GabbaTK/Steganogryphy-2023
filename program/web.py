@@ -35,9 +35,6 @@ def updateList(html, vid):
                         <h2 class="vertical-spacer">( can only encode file into image, not video, enter DECODE to decode the message )</h2>
                         <input type="text" id="secret" name="secret" class="rounded-corners input-big-size text-align vertical-spacer input-box" autocomplete="off">
                         <br>
-                        <h2 class="vertical-spacer">If decoding please enter a rough estimate of the text size, the closer the faster decoding</h2>
-                        <input type="text" id="size" name="size" class="rounded-corners input-big-size text-align vertical-spacer" autocomplete="off">
-                        <br>
                         <br>
                         <input type="submit" name="submit" value="Submit" class="rounded-corners input-big-size text-align">
                     </form>
@@ -372,18 +369,12 @@ def home():
         secret = request.form['secret']
         mode = request.form["mode"]
         type = request.form["type"]
-        expectedSize = request.form["size"]
 
-        try:
-            expectedSize = int(expectedSize)
-        except:
-            expectedSize = 0
-
-        return encode(file, secret, mode, type, expectedSize)
+        return encode(file, secret, mode, type)
     else:
         return refresh()
 
-def encode(file, secret, mode, type, expectedSize):
+def encode(file, secret, mode, type):
     videoDecoded = updateList(videoDecodedO, True) + """
         </div>
     </body>
@@ -424,7 +415,7 @@ def encode(file, secret, mode, type, expectedSize):
 
     if secret == "DECODE":
         if type != "CAPT":
-            textResult = unhideText(file, expectedSize)
+            textResult = unhideText(file)
             
             return decodingSuccess + textResult + "</h2></body></html>"
         elif type == "CAPT":
