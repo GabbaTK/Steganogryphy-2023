@@ -374,6 +374,11 @@ def home():
         type = request.form["type"]
         expectedSize = request.form["size"]
 
+        try:
+            expectedSize = int(expectedSize)
+        except:
+            expectedSize = 0
+
         return encode(file, secret, mode, type, expectedSize)
     else:
         return refresh()
